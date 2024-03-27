@@ -22,13 +22,13 @@
 						<field name="arch" type="xml">
 							<field name="state" position="before">
 								<button name="action_verificar_cfdi" type="object" string="Verificar CFDI"
-									attrs="{'invisible':[('move_type','!=','in_invoice')]}"
+									invisible="move_type != 'in_invoice'"
 									groups="account.group_account_invoice"/>
 							</field>
 							<field name="invoice_date" position="after">
-								<field name="cfdi_state" attrs="{'readonly':[('move_type','=','in_invoice')],'invisible':['|',('move_type','!=','in_invoice'),('cfdi_state','=','draft')]}"/>
-								<field name="cfdi_folio" attrs="{'invisible':['|',('move_type','!=','in_invoice'),('cfdi_state','=','draft')],'readonly':[('move_type','=','in_invoice')]}"/>
-								<field name="cfdi_uuid" attrs="{'invisible':[('move_type','!=','in_invoice')],'readonly':[('move_type','=','in_invoice'),('cfdi_state','!=','draft')]}"/>
+								<field name="cfdi_state" readonly="True" invisible="move_type!='in_invoice' or cfdi_state=='draft'"/>
+								<field name="cfdi_folio" readonly="True" invisible="move_type!='in_invoice' or cfdi_state=='draft'"/>
+								<field name="cfdi_uuid" readonly="cfdi_state!='draft'" invisible="move_type!='in_invoice'"/>
 							</field>
 						</field>
 				</record>

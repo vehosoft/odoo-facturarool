@@ -2,7 +2,7 @@
 # Code by: Francisco Rodriguez (frodriguez@vehosoft.com).
 
 from odoo import api, fields, exceptions, models, _
-from odoo.exceptions import AccessError, UserError, RedirectWarning, ValidationError, Warning
+from odoo.exceptions import AccessError, UserError, RedirectWarning, ValidationError
 from lxml import etree
 import json
 import qrcode

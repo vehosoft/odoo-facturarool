@@ -7,18 +7,18 @@
             <field name="arch" type="xml">
                 <form string="Cuenta FacturaTool">
                     <header>
-                        <button name="action_validate" type="object" string="Validar" attrs="{'invisible':[('validate', '=', True)]}" class="oe_highlight" groups="account.group_account_manager"/>
-                        <button name="action_validate" type="object" string="Validar" attrs="{'invisible':[('validate', '=', False)]}" groups="account.group_account_manager"/>
+                        <button name="action_validate" type="object" string="Validar" invisible="validate == True" class="oe_highlight" groups="account.group_account_manager"/>
+                        <button name="action_validate" type="object" string="Validar" invisible="validate == False" groups="account.group_account_manager"/>
                     </header>
                     <sheet>
                         <!-- Account status-->
-                        <widget name="web_ribbon" title="Validada" attrs="{'invisible':[('validate', '=', False)]}"/>
+                        <widget name="web_ribbon" title="Validada" invisible="validate == False"/>
                         
                         <group string="Credenciales de acceso" colspan="4">
                             <field name="rfc"/>
                             <field name="username"/>
                             <field name="password" password="True"/>
-                            <field name="validate" invisible="1"/>
+                            <field name="validate" invisible="True"/>
                             <field name="company_id"/>
                         </group>
                     </sheet>

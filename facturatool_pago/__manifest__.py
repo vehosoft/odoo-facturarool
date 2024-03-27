@@ -4,7 +4,7 @@
 {
 	'name': 'Complemento de Pago CFDI v4.0',
 	'summary': 'Permite emitir Facturas CFDI v4.0 Complemento de Pago',
-	'version': '16.0.1.0.1',
+	'version': '17.0.1.0.1',
 	'category': 'Invoicing Management',
 	'author': 'VeHoSoft',
 	'website': 'http://www.vehosoft.com',
