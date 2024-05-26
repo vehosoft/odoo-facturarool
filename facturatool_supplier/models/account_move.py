@@ -109,6 +109,10 @@ class AccountMove(models.Model):
                 nodoAux=nodo.xpath('d:TimbreFiscalDigital', namespaces=ns)
                 cfdi_uuid=nodoAux[0].get("UUID")
             
+            _logger.debug('===== get_cfdi_data emisor_rfc = %r',emisor_rfc )
+            _logger.debug('===== get_cfdi_data emisor_nombre = %r',emisor_nombre )
+            _logger.debug('===== get_cfdi_data receptor_rfc = %r',receptor_rfc )
+            _logger.debug('===== get_cfdi_data cfdi_uuid = %r',cfdi_uuid )
             if emisor_rfc != None and emisor_nombre != None and receptor_rfc != None and cfdi_uuid != None:
                 #Se obtiene la compañia a la que pertenece la factura
                 company_id = self.env['res.company'].search([('vat','=',receptor_rfc)])
@@ -118,10 +122,15 @@ class AccountMove(models.Model):
                     company_id = False
                 #Se obtiene el id del proveedor, partner
                 partner_id = self.env['res.partner'].search([('vat','=',emisor_rfc)])
+                _logger.debug('===== get_cfdi_data partner_id = %r',partner_id )
                 if len(partner_id) > 0:
                     partner_id = partner_id[0].id
                 else:
-                    partner_id = False
+                    _logger.debug('===== get_cfdi_data Se crea el registro de proveedor' )
+                    #Se crea el registro de proveedor
+                    partner_new = self.env['res.partner'].sudo().create({'supplier_rank': 1,'name': emisor_nombre,'vat': emisor_rfc})
+                    _logger.debug('===== get_cfdi_data partner_new = %r',partner_new )
+                    partner_id = partner_new['id']
                 
                 cfdi_data['emisor'] = {
                     'id': partner_id,
