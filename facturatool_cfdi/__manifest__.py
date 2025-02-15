@@ -10,15 +10,16 @@
 	'website': 'http://www.vehosoft.com',
 	'license': 'AGPL-3',
 	'depends': [
-		'facturatool_account',
+		'account','facturatool_account',
 	],
 	'data': [
 		'security/ir.model.access.csv',
+		'data/mail_template_data.xml',
 		'views/partner_views.xml',
 		'views/product_views.xml',
 		'views/account_views.xml',
 		'wizard/account_move_timbrar_views.xml',
-		#'views/report_invoice.xml',
+		'views/report_invoice.xml',
 	],
 	'qweb': [
 

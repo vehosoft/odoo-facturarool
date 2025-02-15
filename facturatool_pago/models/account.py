@@ -2,7 +2,7 @@
 # Code by: Francisco Rodriguez (frodriguez@vehosoft.com).
 
 from odoo import api, fields, exceptions, models, _
-from odoo.exceptions import AccessError, UserError, RedirectWarning, ValidationError, Warning
+from odoo.exceptions import AccessError, UserError, RedirectWarning, ValidationError
 from lxml import etree
 import json
 import qrcode
@@ -24,6 +24,18 @@ class AccountPayment(models.Model):
     cfdi_hora_pago_str = fields.Char('Hora de Pago Texto',compute='_cfdi_hora_pago_str')
     cfdi_doctos_rel = fields.Text('Documentos Relacionados', copy=False)
     
+    def xmlrpc_assign_payment_to_invoices(self,payment_id,invoice_ids):
+        payment = self.browse(payment_id)
+        _logger.debug('===== xmlrpc_assign_payment_to_invoices payment = %r',payment)
+        line_id = False
+        for line in payment.move_id.line_ids:
+            if line.account_id.id == 2:
+                line_id = line.id
+        _logger.debug('===== xmlrpc_assign_payment_to_invoices line = %r',line)
+        for invoice_id in invoice_ids:
+            invoice = self.env['account.move'].browse(invoice_id)
+            invoice.js_assign_outstanding_line(line_id)
+        return [line_id]
     def _cfdi_hora_pago_str(self):
         for record in self:
             float_time = str(record.cfdi_hora_pago)

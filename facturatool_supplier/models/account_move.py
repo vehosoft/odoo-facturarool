@@ -67,119 +67,126 @@ class AccountMove(models.Model):
             return False
     #Procesa el contenido de un xml y obtine los datos del CFDI
     def get_cfdi_data(self, cfdi):
-        try:
-            cfdi_data = {
-                'emisor': {
-                    'id': False,
-                    'rfc': '',
-                    'nombre': '',
-                },
-                'receptor': {
-                    'id': False,
-                    'rfc': '',
-                },
-                'uuid': False,
-                'folio': '',
-                'total': False,
-                'fecha': False,
-                'conceptos': []
-            }
-            _logger.debug('===== get_cfdi_data isinstance(cfdi, etree._Element) = %r',isinstance(cfdi, etree._Element) )
-            if isinstance(cfdi, etree._Element) == False:
-                parser = etree.XMLParser(ns_clean=True, recover=True)
-                _logger.debug('===== get_cfdi_data self.is_utf8_code(cfdi) = %r',self.is_utf8_code(cfdi) )
-                if self.is_utf8_code(cfdi) == False:
-                    cfdi = cfdi.encode('utf-8')
-                cfdi = etree.fromstring(cfdi, parser)
-            _logger.debug('===== get_cfdi_data cfdi = %r',cfdi )
-            ns = {'c':'http://www.sat.gob.mx/cfd/4','d':'http://www.sat.gob.mx/TimbreFiscalDigital'}
-            nodoE=cfdi.xpath('c:Emisor ', namespaces=ns)
-            nodoR=cfdi.xpath('c:Receptor ', namespaces=ns)
-            nodoC=cfdi.xpath('c:Complemento ', namespaces=ns)
-            total=cfdi.get('Total')
-            fecha=cfdi.get('Fecha')
-            serie=cfdi.get('Serie')
-            folio=cfdi.get('Folio')
-            for nodo in nodoE:
-                emisor_rfc = nodo.get("Rfc")
-                emisor_nombre = nodo.get("Nombre")
-            for nodo in nodoR:
-                receptor_rfc = nodo.get("Rfc")
-            for nodo in nodoC:
-                nodoAux=nodo.xpath('d:TimbreFiscalDigital', namespaces=ns)
-                cfdi_uuid=nodoAux[0].get("UUID")
+        #try:
+        cfdi_data = {
+            'emisor': {
+                'id': False,
+                'rfc': '',
+                'nombre': '',
+            },
+            'receptor': {
+                'id': False,
+                'rfc': '',
+            },
+            'uuid': False,
+            'folio': '',
+            'total': False,
+            'fecha': False,
+            'conceptos': []
+        }
+        _logger.debug('===== get_cfdi_data isinstance(cfdi, etree._Element) = %r',isinstance(cfdi, etree._Element) )
+        if isinstance(cfdi, etree._Element) == False:
+            parser = etree.XMLParser(ns_clean=True, recover=True)
+            _logger.debug('===== get_cfdi_data self.is_utf8_code(cfdi) = %r',self.is_utf8_code(cfdi) )
+            if self.is_utf8_code(cfdi) == False:
+                cfdi = cfdi.encode('utf-8')
+            cfdi = etree.fromstring(cfdi, parser)
+        _logger.debug('===== get_cfdi_data cfdi = %r',cfdi )
+        ns = {'c':'http://www.sat.gob.mx/cfd/4','d':'http://www.sat.gob.mx/TimbreFiscalDigital'}
+        nodoE=cfdi.xpath('c:Emisor ', namespaces=ns)
+        nodoR=cfdi.xpath('c:Receptor ', namespaces=ns)
+        nodoC=cfdi.xpath('c:Complemento ', namespaces=ns)
+        total=cfdi.get('Total')
+        fecha=cfdi.get('Fecha')
+        serie=cfdi.get('Serie')
+        folio=cfdi.get('Folio')
+        for nodo in nodoE:
+            emisor_rfc = nodo.get("Rfc")
+            emisor_nombre = nodo.get("Nombre")
+        for nodo in nodoR:
+            receptor_rfc = nodo.get("Rfc")
+        for nodo in nodoC:
+            nodoAux=nodo.xpath('d:TimbreFiscalDigital', namespaces=ns)
+            cfdi_uuid=nodoAux[0].get("UUID")
+        
+        _logger.debug('===== get_cfdi_data emisor_rfc = %r',emisor_rfc )
+        _logger.debug('===== get_cfdi_data emisor_nombre = %r',emisor_nombre )
+        _logger.debug('===== get_cfdi_data receptor_rfc = %r',receptor_rfc )
+        _logger.debug('===== get_cfdi_data cfdi_uuid = %r',cfdi_uuid )
+        if emisor_rfc != None and emisor_nombre != None and receptor_rfc != None and cfdi_uuid != None:
+            #Se obtiene la compañia a la que pertenece la factura
+            company_id = self.env['res.company'].search([('vat','=',receptor_rfc)])
+            if len(company_id) > 0:
+                company_id = company_id[0].id
+            else:
+                company_id = False
+            #Se obtiene el id del proveedor, partner
+            partner_id = self.env['res.partner'].search([('vat','=',emisor_rfc)])
+            _logger.debug('===== get_cfdi_data partner_id = %r',partner_id )
+            if len(partner_id) > 0:
+                partner_id = partner_id[0].id
+            else:
+                _logger.debug('===== get_cfdi_data Se crea el registro de proveedor' )
+                #Se crea el registro de proveedor
+                _logger.debug('===== get_cfdi_data self.env.user.company_id.country_id = %r',self.env.user.company_id.country_id )
+                partner_new = self.env['res.partner'].sudo().create({
+                    'supplier_rank': 1,
+                    'name': emisor_nombre,
+                    'vat': emisor_rfc,
+                    'country_id': self.env.user.company_id.country_id.id
+                })
+                _logger.debug('===== get_cfdi_data partner_new = %r',partner_new )
+                _logger.debug('===== get_cfdi_data partner_new = %r',partner_new )
+                partner_id = partner_new['id']
             
-            _logger.debug('===== get_cfdi_data emisor_rfc = %r',emisor_rfc )
-            _logger.debug('===== get_cfdi_data emisor_nombre = %r',emisor_nombre )
-            _logger.debug('===== get_cfdi_data receptor_rfc = %r',receptor_rfc )
-            _logger.debug('===== get_cfdi_data cfdi_uuid = %r',cfdi_uuid )
-            if emisor_rfc != None and emisor_nombre != None and receptor_rfc != None and cfdi_uuid != None:
-                #Se obtiene la compañia a la que pertenece la factura
-                company_id = self.env['res.company'].search([('vat','=',receptor_rfc)])
-                if len(company_id) > 0:
-                    company_id = company_id[0].id
-                else:
-                    company_id = False
-                #Se obtiene el id del proveedor, partner
-                partner_id = self.env['res.partner'].search([('vat','=',emisor_rfc)])
-                _logger.debug('===== get_cfdi_data partner_id = %r',partner_id )
-                if len(partner_id) > 0:
-                    partner_id = partner_id[0].id
-                else:
-                    _logger.debug('===== get_cfdi_data Se crea el registro de proveedor' )
-                    #Se crea el registro de proveedor
-                    partner_new = self.env['res.partner'].sudo().create({'supplier_rank': 1,'name': emisor_nombre,'vat': emisor_rfc})
-                    _logger.debug('===== get_cfdi_data partner_new = %r',partner_new )
-                    partner_id = partner_new['id']
-                
-                cfdi_data['emisor'] = {
-                    'id': partner_id,
-                    'rfc': emisor_rfc,
-                    'nombre': emisor_nombre,
-                }
-                cfdi_data['receptor'] = {
-                    'id': company_id,
-                    'rfc': receptor_rfc
-                }
-                cfdi_data['uuid'] = cfdi_uuid
-                cfdi_data['total'] = total
-                if fecha != None:
-                    cfdi_data['fecha'] = fecha.split("T")[0]
-                if serie != None:
-                    cfdi_data['folio'] += serie
-                if folio != None:
-                    cfdi_data['folio'] += folio
-                #Se obtienen los conceptos del xml cfdi
-                nodoC=cfdi.xpath('c:Conceptos ', namespaces=ns)
-                for nodo in nodoC:
-                    conceptos=nodo.xpath('c:Concepto', namespaces=ns)
-                    for concepto in conceptos:
-                        conceptoData = {
-                            'quantity': float(concepto.get("Cantidad")),
-                            'price_unit': float(concepto.get("ValorUnitario")),
-                            'name': concepto.get("Descripcion")
-                        }
-                        nodoImps=concepto.xpath('c:Impuestos', namespaces=ns)
-                        for nodoI in nodoImps:
-                            impuestos=nodoI.xpath('c:Traslados', namespaces=ns)
-                            for impuesto in impuestos:
-                                impTras=impuesto.xpath('c:Traslado', namespaces=ns)
-                                tax_ids = []
-                                for impT in impTras:
-                                    TipoFactor = impT.get("TipoFactor")
-                                    TasaOCuota = float(impT.get("TasaOCuota"))
-                                    if TipoFactor == 'Tasa':
-                                        TasaOCuota = TasaOCuota*100.00
-                                    tax_id = self.env['account.tax'].search([('type_tax_use','=','purchase'),('amount','=',TasaOCuota)])
-                                    if len(tax_id) > 0:
-                                        tax_ids.append((4,tax_id[0].id))
-                                if len(tax_ids) > 0:
-                                    conceptoData['tax_ids']=tax_ids
-                        cfdi_data['conceptos'].append(conceptoData)
+            cfdi_data['emisor'] = {
+                'id': partner_id,
+                'rfc': emisor_rfc,
+                'nombre': emisor_nombre,
+            }
+            cfdi_data['receptor'] = {
+                'id': company_id,
+                'rfc': receptor_rfc
+            }
+            cfdi_data['uuid'] = cfdi_uuid
+            cfdi_data['total'] = total
+            if fecha != None:
+                cfdi_data['fecha'] = fecha.split("T")[0]
+            if serie != None:
+                cfdi_data['folio'] += serie
+            if folio != None:
+                cfdi_data['folio'] += folio
+            #Se obtienen los conceptos del xml cfdi
+            nodoC=cfdi.xpath('c:Conceptos ', namespaces=ns)
+            for nodo in nodoC:
+                conceptos=nodo.xpath('c:Concepto', namespaces=ns)
+                for concepto in conceptos:
+                    conceptoData = {
+                        'quantity': float(concepto.get("Cantidad")),
+                        'price_unit': float(concepto.get("ValorUnitario")),
+                        'name': concepto.get("Descripcion")
+                    }
+                    nodoImps=concepto.xpath('c:Impuestos', namespaces=ns)
+                    for nodoI in nodoImps:
+                        impuestos=nodoI.xpath('c:Traslados', namespaces=ns)
+                        for impuesto in impuestos:
+                            impTras=impuesto.xpath('c:Traslado', namespaces=ns)
+                            tax_ids = []
+                            for impT in impTras:
+                                TipoFactor = impT.get("TipoFactor")
+                                TasaOCuota = float(impT.get("TasaOCuota"))
+                                if TipoFactor == 'Tasa':
+                                    TasaOCuota = TasaOCuota*100.00
+                                tax_id = self.env['account.tax'].search([('type_tax_use','=','purchase'),('amount','=',TasaOCuota)])
+                                if len(tax_id) > 0:
+                                    tax_ids.append((4,tax_id[0].id))
+                            if len(tax_ids) > 0:
+                                conceptoData['tax_ids']=tax_ids
+                    cfdi_data['conceptos'].append(conceptoData)
 
-            return cfdi_data
-        except:
-            return False
+        return cfdi_data
+        #except:
+        #    return False
     
     def _get_create_document_from_attachment_decoders(self):
         res = super(AccountMove,self)._get_create_document_from_attachment_decoders()

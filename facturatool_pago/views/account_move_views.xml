@@ -10,8 +10,8 @@
             <field name="arch" type="xml">
                 <!--<xpath expr='//notebook/page[@id="invoice_tab"]/group[@class="oe_invoice_lines_tab"]/field[@name="amount_residual"]' position="after">-->
                 <field name="amount_residual"  position="after">
-                    <field name="cfdi_residual" class="oe_subtotal_footer_separator" attrs="{'invisible': [('cfdi_state', '!=', 'done')]}"/>
-                    <field name="cfdi_parcialidad" readonly="1" attrs="{'invisible': [('cfdi_state', '!=', 'done')]}"/>
+                    <field name="cfdi_residual" class="oe_subtotal_footer_separator" invisible="cfdi_state!='done'"/>
+                    <field name="cfdi_parcialidad" readonly="1" invisible="cfdi_state!='done'"/>
                 </field>
                 <!--</xpath>-->
             </field>

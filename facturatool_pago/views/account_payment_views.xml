@@ -41,20 +41,20 @@
             <field name="arch" type="xml">
                 <field name="state" position="before">
                     <button name="action_wizard_timbrar_pago_cfdi" type="object" string="Timbrar CFDI"
-                        attrs="{'invisible':['|','|','|',('payment_type','!=','inbound'),('cfdi_state', '!=', 'draft'),('state','=','draft'),('state','=','cancel')]}"
+                        invisible="payment_type!='inbound' or cfdi_state!='draft' or state in ('draft','cancel')"
                         class="oe_highlight" groups="account.group_account_invoice"/>
                     <button name="action_cancel_pago_cfdi" type="object" string="Cancelar CFDI"
-                        attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state', '!=', 'done')]}"
+                        invisible="payment_type!='inbound' or cfdi_state!='done'"
                         groups="account.group_account_invoice" confirm="Estas seguro de cancelar el CFDI de este Complemento de Pago?"/>
                 </field>
                 <xpath expr='//group/group[@name="group2"]/field[@name="journal_id"]' position="before">
-                    <field name="cfdi_fecha" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
-                    <field name="cfdi_hora" widget="float_time" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
-                    <field name="cfdi_state" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
-                    <field name="cfdi_serie" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
-                    <field name="cfdi_folio" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
-                    <field name="cfdi_forma_pago" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
-                    <field name="cfdi_uuid" attrs="{'invisible':['|',('payment_type','!=','inbound'),('cfdi_state','=','draft')]}"/>
+                    <field name="cfdi_fecha" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
+                    <field name="cfdi_hora" widget="float_time" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
+                    <field name="cfdi_state" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
+                    <field name="cfdi_serie" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
+                    <field name="cfdi_folio" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
+                    <field name="cfdi_forma_pago" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
+                    <field name="cfdi_uuid" invisible="payment_type!='inbound' or cfdi_state=='draft'"/>
                 </xpath>
                 <xpath expr='//group/group[@name="group1"]/field[@name="date"]' position="after">
                     <field name="cfdi_hora_pago" widget="float_time"/>
